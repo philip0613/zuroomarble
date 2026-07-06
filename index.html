@@ -15,23 +15,36 @@
         </div>
     </div>
 
-    <!-- 6x6 그리드 주루마블 판 -->
-    <div id="boardContainer">
-        <!-- 가운데 빈 공간 (주사위 & 지옥 룰렛) -->
-        <div id="centerArea">
-            <div id="normalMode">
-                <p id="statusMsg">주사위를 굴려주세요!</p>
-                <button id="diceBtn">주사위 굴리기 🎲</button>
+    <!-- 1. 플레이어 등록 화면 -->
+    <div id="setupArea">
+        <h2>👥 플레이어 설정</h2>
+        <p>함께할 친구들의 이름을 등록해 주세요.</p>
+        <input type="text" id="playerName" placeholder="이름 (예: 동기1)">
+        <button id="addPlayerBtn">추가하기</button>
+        
+        <div id="playerList"></div>
+        <button id="startGameBtn" class="hidden">게임 시작! 🚀</button>
+    </div>
+
+    <!-- 2. 메인 게임 화면 -->
+    <div id="gameArea" class="hidden">
+        <!-- 6x6 그리드 주루마블 판 -->
+        <div id="boardContainer">
+            <!-- 가운데 빈 공간 (주사위 & 미니 지옥 보드) -->
+            <div id="centerArea">
+                <h2 id="turnIndicator">누구 차례?</h2>
+                <div class="dice-controls">
+                    <button id="diceBtn">주사위 굴리기 🎲</button>
+                    <button id="hellDiceBtn" class="hidden">🔥 지옥 탈출 굴리기 🔥</button>
+                </div>
+                
+                <!-- 3x3 미니 지옥 보드판 -->
+                <div id="hellMiniBoard">
+                    <!-- JS로 8개의 지옥 칸이 생성됨 -->
+                </div>
             </div>
-            
-            <div id="hellMode" class="hidden">
-                <h2>🔥 지옥 룰렛 🔥</h2>
-                <p>7칸 중 단 1칸만 탈출!</p>
-                <h1 id="hellResult">🎯</h1>
-                <button id="hellDiceBtn">룰렛 돌리기</button>
-            </div>
+            <!-- JS로 20개의 겉면 칸들이 생성됨 -->
         </div>
-        <!-- 자바스크립트로 20개의 겉면 칸들이 여기에 생성됨 -->
     </div>
 
     <script src="script.js"></script>
