@@ -1,12 +1,23 @@
 body {
     font-family: 'Arial', sans-serif;
     background-color: #f4f4f9;
-    text-align: center;
-    margin: 0;
-    padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding: 20px;
+    margin: 0;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.auth-section {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 10px;
 }
 
 input {
@@ -38,8 +49,8 @@ button:active {
     padding: 30px;
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    margin-bottom: 20px;
     width: 300px;
+    text-align: center;
 }
 
 #playerList {
@@ -73,34 +84,42 @@ button:active {
     border-radius: 10px;
 }
 
-/* 타일 공통 설정 (말 겹침 방지) */
+/* 타일 공통 설정 (클릭 가능하게 커서 변경) */
 .tile, .hell-tile {
     background-color: white;
     display: flex;
     flex-wrap: wrap; 
-    align-content: flex-end; /* 말들이 아래쪽부터 쌓임 */
+    align-content: flex-end; 
     justify-content: center;
     font-weight: bold;
     font-size: 13px;
     position: relative;
     padding: 5px;
-    padding-top: 30px; /* 글씨 공간 확보 */
+    padding-top: 30px; 
     word-break: keep-all;
     text-align: center;
 }
 
-.tile { border: 2px solid #ddd; }
-.hell-tile { border: 2px solid #ff4757; font-size: 11px; padding-top: 20px; }
+.tile {
+    border: 2px solid #ddd;
+    cursor: pointer; /* 클릭해서 수정할 수 있다는 표시 */
+}
 
-/* 타일 배경 글씨 (절대 위치로 말 뒤에 깔리게) */
+.hell-tile {
+    border: 2px solid #ff4757;
+    font-size: 11px;
+    padding-top: 20px;
+    cursor: default; /* 지옥은 수정 불가 */
+}
+
 .tile-text {
     position: absolute;
     top: 5px;
     left: 0;
     width: 100%;
+    pointer-events: none; /* 글자 위를 클릭해도 타일이 클릭되도록 */
 }
 
-/* 플레이어 말 (동그라미에 첫 글자 표시) */
 .player-token {
     width: 20px;
     height: 20px;
@@ -113,6 +132,7 @@ button:active {
     margin: 2px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.5);
     z-index: 10;
+    pointer-events: none;
 }
 
 /* 보드판 중앙 구역 */
@@ -126,6 +146,7 @@ button:active {
     align-items: center;
     justify-content: space-around;
     padding: 10px;
+    text-align: center;
 }
 
 /* 3x3 미니 지옥 보드 */
@@ -141,4 +162,6 @@ button:active {
     border-radius: 8px;
 }
 
-.hidden { display: none !important; }
+.hidden {
+    display: none !important;
+}
