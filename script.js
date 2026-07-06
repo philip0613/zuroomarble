@@ -212,3 +212,92 @@ hellDiceBtn.addEventListener("click", () => {
         }, 300);
     });
 });
+
+// --- 6. 커스텀 판 수정 및 DB 저장/불러오기 기능 ---
+let isEditMode = false;
+const editModeBtn = document.getElementById("editModeBtn");
+
+// 1) 수정 모드 켜기/끄기
+editModeBtn.addEventListener("click", () => {
+    isEditMode = !isEditMode;
+    editModeBtn.innerText = isEditMode ? "수정 완료 ✅" : "판 커스텀하기 ✏️";
+    if (isEditMode) {
+        alert("바꾸고 싶은 하얀색 칸을 클릭해서 벌칙을 마음대로 수정해 보세요! (시작, 지옥 등 고정 칸 제외)");
+    }
+});
+
+// 2) 보드판 칸을 클릭했을 때 글자 바꾸기 (이벤트 위임 활용)
+boardContainer.addEventListener("click", (e) => {
+    if (!isEditMode) return;
+    
+    // 클릭한 곳이 타일(칸)인지 확인
+    const tile = e.target.closest('.tile');
+    if (!tile) return;
+
+    // 타일이 전체 보드에서 몇 번째 칸인지 인덱스 찾기
+    const tilesArray = Array.from(boardContainer.querySelectorAll('.tile'));
+    const index = tilesArray.indexOf(tile);
+
+    // 고정 칸(0: 시작, 5: 지옥, 10: 눈치게임, 15: 맞은편)은 수정 방지
+    if ([0, 5, 10, 15].includes(index)) {
+        alert("이 칸은 게임 진행을 위한 고정 칸이라 바꿀 수 없습니다 🙅‍♂️");
+        return;
+    }
+
+    const currentText = mainBoardData[index];
+    const newText = prompt("새로운 벌칙을 입력하세요:", currentText);
+    
+    if (newText && newText.trim() !== "") {
+        mainBoardData[index] = newText;
+        renderAllBoards(); // 화면 새로고침
+    }
+});
+
+// 3) DB에 현재 판 저장하기
+document.getElementById("saveBtn").addEventListener("click", async () => {
+    const boardName = prompt("저장할 판의 이름을 지어주세요 (예: 스퀘 엠티용 매운맛)");
+    if (!boardName) return;
+
+    try {
+        const response = await fetch('/api/saveBoard', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ board_name: boardName, custom_tiles: mainBoardData })
+        });
+        
+        if (response.ok) alert("✅ 데이터베이스에 성공적으로 저장되었습니다!");
+        else alert("❌ 저장에 실패했습니다.");
+    } catch (error) {
+        alert("서버 연결에 문제가 발생했습니다.");
+    }
+});
+
+// 4) DB에서 판 목록 불러오기
+document.getElementById("loadBtn").addEventListener("click", async () => {
+    try {
+        const response = await fetch('/api/loadBoards');
+        const boards = await response.json();
+        
+        if (boards.length === 0) {
+            return alert("아직 저장된 판이 없습니다. 첫 번째 판을 만들어 보세요!");
+        }
+        
+        // 목록을 번호와 함께 보여주기
+        let msg = "👇 불러올 판의 번호를 입력하세요:\n\n";
+        boards.forEach((board, idx) => {
+            msg += `${idx + 1}. ${board.board_name}\n`;
+        });
+        
+        const choice = prompt(msg);
+        const selectedIndex = parseInt(choice) - 1;
+        
+        // 유저가 올바른 번호를 입력했다면 해당 판 데이터로 교체
+        if (boards[selectedIndex]) {
+            mainBoardData = boards[selectedIndex].custom_tiles;
+            renderAllBoards(); // 화면 새로고침
+            alert(`🎉 '${boards[selectedIndex].board_name}' 판을 성공적으로 불러왔습니다!`);
+        }
+    } catch (error) {
+        alert("목록을 불러오는 중 오류가 발생했습니다.");
+    }
+});
