@@ -165,3 +165,20 @@ button:active {
 .hidden {
     display: none !important;
 }
+
+
+/* 로그인 모달 디자인 */
+.modal {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 100;
+}
+.modal-content {
+    background: white; padding: 30px; border-radius: 10px; width: 300px;
+    display: flex; flex-direction: column; gap: 10px; position: relative; text-align: center;
+}
+.close-btn {
+    position: absolute; right: 15px; top: 10px; font-size: 24px; cursor: pointer; color: #777;
+}
+#userInfo {
+    font-weight: bold; font-size: 16px; margin: 10px; color: #2c3e50;
+}
