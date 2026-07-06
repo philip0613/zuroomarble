@@ -9,15 +9,31 @@
 <body>
     <div class="header">
         <h1>🎲 지옥의 주루마블</h1>
-        <!-- 새롭게 추가된 커스텀 및 DB 연동 버튼들 -->
         <div class="auth-section">
+            <!-- 로그인 전 -->
+            <button id="openLoginBtn">로그인 / 회원가입 🔐</button>
+            <!-- 로그인 후 -->
+            <span id="userInfo" class="hidden"></span>
+            <button id="logoutBtn" class="hidden" style="background-color: #555;">로그아웃</button>
+            
             <button id="editModeBtn">판 커스텀하기 ✏️</button>
-            <button id="saveBtn">현재 판 저장하기 💾</button>
-            <button id="loadBtn">저장된 판 불러오기 📂</button>
+            <button id="saveBtn">내 판 저장하기 💾</button>
+            <button id="loadBtn">내 판 불러오기 📂</button>
         </div>
     </div>
 
-    <!-- 1. 플레이어 등록 화면 -->
+    <!-- 로그인 모달 (팝업창) -->
+    <div id="authModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-btn" id="closeModalBtn">&times;</span>
+            <h2>계정 연동</h2>
+            <input type="email" id="emailInput" placeholder="이메일 (예: test@test.com)">
+            <input type="password" id="passwordInput" placeholder="비밀번호 (6자리 이상)">
+            <button id="loginSubmitBtn">로그인</button>
+            <button id="signupSubmitBtn" style="background-color: #3498db;">새로 회원가입</button>
+        </div>
+    </div>
+
     <div id="setupArea">
         <h2>👥 플레이어 설정</h2>
         <input type="text" id="playerName" placeholder="이름 (예: 민기)">
@@ -26,17 +42,14 @@
         <button id="startGameBtn" class="hidden">게임 시작! 🚀</button>
     </div>
 
-    <!-- 2. 메인 게임 화면 -->
     <div id="gameArea" class="hidden">
         <div id="boardContainer">
-            <!-- 중앙 보드 -->
             <div id="centerArea">
                 <h2 id="turnIndicator">누구 차례?</h2>
                 <div class="dice-controls">
                     <button id="diceBtn">주사위 굴리기 🎲</button>
                     <button id="hellDiceBtn" class="hidden">🔥 지옥 탈출 굴리기 🔥</button>
                 </div>
-                <!-- 3x3 미니 지옥 보드판 -->
                 <div id="hellMiniBoard"></div>
             </div>
         </div>
