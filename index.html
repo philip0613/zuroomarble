@@ -9,41 +9,36 @@
 <body>
     <div class="header">
         <h1>🎲 지옥의 주루마블</h1>
+        <!-- 새롭게 추가된 커스텀 및 DB 연동 버튼들 -->
         <div class="auth-section">
-            <button id="loginBtn">로그인 (준비중)</button>
-            <button id="saveBtn">내 판 저장하기 (준비중)</button>
+            <button id="editModeBtn">판 커스텀하기 ✏️</button>
+            <button id="saveBtn">현재 판 저장하기 💾</button>
+            <button id="loadBtn">저장된 판 불러오기 📂</button>
         </div>
     </div>
 
     <!-- 1. 플레이어 등록 화면 -->
     <div id="setupArea">
         <h2>👥 플레이어 설정</h2>
-        <p>함께할 친구들의 이름을 등록해 주세요.</p>
-        <input type="text" id="playerName" placeholder="이름 (예: 동기1)">
+        <input type="text" id="playerName" placeholder="이름 (예: 민기)">
         <button id="addPlayerBtn">추가하기</button>
-        
         <div id="playerList"></div>
         <button id="startGameBtn" class="hidden">게임 시작! 🚀</button>
     </div>
 
     <!-- 2. 메인 게임 화면 -->
     <div id="gameArea" class="hidden">
-        <!-- 6x6 그리드 주루마블 판 -->
         <div id="boardContainer">
-            <!-- 가운데 빈 공간 (주사위 & 미니 지옥 보드) -->
+            <!-- 중앙 보드 -->
             <div id="centerArea">
                 <h2 id="turnIndicator">누구 차례?</h2>
                 <div class="dice-controls">
                     <button id="diceBtn">주사위 굴리기 🎲</button>
                     <button id="hellDiceBtn" class="hidden">🔥 지옥 탈출 굴리기 🔥</button>
                 </div>
-                
                 <!-- 3x3 미니 지옥 보드판 -->
-                <div id="hellMiniBoard">
-                    <!-- JS로 8개의 지옥 칸이 생성됨 -->
-                </div>
+                <div id="hellMiniBoard"></div>
             </div>
-            <!-- JS로 20개의 겉면 칸들이 생성됨 -->
         </div>
     </div>
 
