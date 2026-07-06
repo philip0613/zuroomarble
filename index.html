@@ -7,31 +7,31 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
+    <div class="header">
         <h1>🎲 지옥의 주루마블</h1>
-        
-        <!-- 로그인/저장 관련 버튼 (4단계에서 쓸 예정) -->
         <div class="auth-section">
             <button id="loginBtn">로그인 (준비중)</button>
             <button id="saveBtn">내 판 저장하기 (준비중)</button>
         </div>
+    </div>
 
-        <div class="game-info">
-            <p id="statusMsg">주사위를 굴려주세요!</p>
-            <button id="diceBtn">주사위 굴리기 🎲</button>
+    <!-- 6x6 그리드 주루마블 판 -->
+    <div id="boardContainer">
+        <!-- 가운데 빈 공간 (주사위 & 지옥 룰렛) -->
+        <div id="centerArea">
+            <div id="normalMode">
+                <p id="statusMsg">주사위를 굴려주세요!</p>
+                <button id="diceBtn">주사위 굴리기 🎲</button>
+            </div>
+            
+            <div id="hellMode" class="hidden">
+                <h2>🔥 지옥 룰렛 🔥</h2>
+                <p>7칸 중 단 1칸만 탈출!</p>
+                <h1 id="hellResult">🎯</h1>
+                <button id="hellDiceBtn">룰렛 돌리기</button>
+            </div>
         </div>
-
-        <!-- 주루마블 판 -->
-        <div id="boardContainer">
-            <!-- 자바스크립트로 칸들이 여기에 생성됨 -->
-        </div>
-
-        <!-- 지옥 (무인도) 구역 -->
-        <div id="hellContainer" class="hidden">
-            <h2>🔥 지옥 탈출 룰렛 🔥</h2>
-            <p>7칸 중 단 1칸만 탈출! 나머지는 마시기!</p>
-            <button id="hellDiceBtn">지옥 룰렛 돌리기 🎯</button>
-        </div>
+        <!-- 자바스크립트로 20개의 겉면 칸들이 여기에 생성됨 -->
     </div>
 
     <script src="script.js"></script>
