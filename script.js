@@ -9,7 +9,6 @@ mainBoardData[10] = "눈치게임\n시작!";
 mainBoardData[15] = "맞은 편\n한잔 마시기";
 
 // 지옥 보드 데이터 (8칸: 3x3 그리드의 테두리)
-// 0: 입구, 1~5&7: 마시기, 6: 탈출
 const hellBoardData = ["💀 입구", "🍻 1잔", "🍻 1잔", "🍻 1잔", "🍻 1잔", "🍻 1잔", "👼 탈출!", "🍻 1잔"];
 
 // 플레이어 및 게임 상태 변수
@@ -57,7 +56,6 @@ startGameBtn.addEventListener("click", () => {
 });
 
 // --- 3. 그리드 좌표 계산 함수 ---
-// 메인 보드 (6x6 ㅁ자 궤도)
 function getMainGridPos(index) {
     if (index === 0) return { r: 6, c: 1 };
     if (index >= 1 && index <= 4) return { r: 6 - index, c: 1 };
@@ -69,7 +67,6 @@ function getMainGridPos(index) {
     if (index >= 16 && index <= 19) return { r: 6, c: 21 - index };
 }
 
-// 지옥 보드 (3x3 ㅁ자 궤도)
 function getHellGridPos(index) {
     if (index === 0) return { r: 1, c: 1 };
     if (index === 1) return { r: 1, c: 2 };
@@ -77,13 +74,12 @@ function getHellGridPos(index) {
     if (index === 3) return { r: 2, c: 3 };
     if (index === 4) return { r: 3, c: 3 };
     if (index === 5) return { r: 3, c: 2 };
-    if (index === 6) return { r: 3, c: 1 }; // 탈출구 (좌측 하단)
+    if (index === 6) return { r: 3, c: 1 }; 
     if (index === 7) return { r: 2, c: 1 };
 }
 
 // --- 4. 보드 그리기 ---
 function renderAllBoards() {
-    // 1. 메인 보드 초기화 및 렌더링
     document.querySelectorAll('.tile').forEach(e => e.remove());
     mainBoardData.forEach((text, i) => {
         const tile = document.createElement("div");
@@ -93,7 +89,6 @@ function renderAllBoards() {
         tile.style.gridRow = pos.r;
         tile.style.gridColumn = pos.c;
 
-        // 이 칸에 있는 (지옥에 빠지지 않은) 플레이어 말 올리기
         players.filter(p => !p.isInHell && p.mainPos === i).forEach(p => {
             const token = document.createElement("div");
             token.className = "player-token";
@@ -104,7 +99,6 @@ function renderAllBoards() {
         boardContainer.appendChild(tile);
     });
 
-    // 2. 미니 지옥 보드 초기화 및 렌더링
     hellMiniBoard.innerHTML = "";
     hellBoardData.forEach((text, i) => {
         const tile = document.createElement("div");
@@ -114,7 +108,6 @@ function renderAllBoards() {
         tile.style.gridRow = pos.r;
         tile.style.gridColumn = pos.c;
 
-        // 이 지옥 칸에 있는 플레이어 말 올리기
         players.filter(p => p.isInHell && p.hellPos === i).forEach(p => {
             const token = document.createElement("div");
             token.className = "player-token";
@@ -170,7 +163,6 @@ function rollDice(btnElement, maxNum, callback) {
     }, 50);
 }
 
-// 메인 주사위 굴리기 (6면체)
 diceBtn.addEventListener("click", () => {
     rollDice(diceBtn, 6, (num) => {
         const cp = players[turnIndex];
@@ -181,7 +173,7 @@ diceBtn.addEventListener("click", () => {
             if (mainBoardData[cp.mainPos] === "🔥 지옥 🔥") {
                 alert(`🚨 ${cp.name} 지옥으로 추락! (다음 턴부터 지옥 탈출)`);
                 cp.isInHell = true;
-                cp.hellPos = 0; // 지옥 입구로 워프
+                cp.hellPos = 0; 
                 renderAllBoards();
             } else {
                 alert(`${cp.name}: [ ${mainBoardData[cp.mainPos]} ]`);
@@ -191,19 +183,17 @@ diceBtn.addEventListener("click", () => {
     });
 });
 
-// 지옥 주사위 굴리기 (6면체)
 hellDiceBtn.addEventListener("click", () => {
     rollDice(hellDiceBtn, 6, (num) => {
         const cp = players[turnIndex];
-        // 8칸짜리 미니 보드 뺑뺑이
         cp.hellPos = (cp.hellPos + num) % 8;
         renderAllBoards();
 
         setTimeout(() => {
-            if (cp.hellPos === 6) { // 6번 인덱스가 '탈출' 칸
+            if (cp.hellPos === 6) { 
                 alert(`🎉 기적! ${cp.name} 지옥 탈출 성공!`);
                 cp.isInHell = false;
-                cp.mainPos = (cp.mainPos + 1) % totalTiles; // 메인 보드 다음 칸으로 생존
+                cp.mainPos = (cp.mainPos + 1) % totalTiles; 
                 renderAllBoards();
             } else {
                 alert(`🔥 지옥 벌칙: ${cp.name} 1잔 마시기! (탈출 실패)`);
@@ -213,91 +203,134 @@ hellDiceBtn.addEventListener("click", () => {
     });
 });
 
-// --- 6. 커스텀 판 수정 및 DB 저장/불러오기 기능 ---
+// --- 6. 회원가입/로그인 및 DB 연동 (내 계정 전용) ---
 let isEditMode = false;
-const editModeBtn = document.getElementById("editModeBtn");
+let currentUser = null; 
 
-// 1) 수정 모드 켜기/끄기
+const editModeBtn = document.getElementById("editModeBtn");
+const authModal = document.getElementById("authModal");
+
+const savedUser = localStorage.getItem("zuroo_user");
+if (savedUser) {
+    currentUser = JSON.parse(savedUser);
+    updateAuthUI();
+}
+
+document.getElementById("openLoginBtn").addEventListener("click", () => authModal.classList.remove("hidden"));
+document.getElementById("closeModalBtn").addEventListener("click", () => authModal.classList.add("hidden"));
+
+function updateAuthUI() {
+    if (currentUser) {
+        document.getElementById("openLoginBtn").classList.add("hidden");
+        document.getElementById("logoutBtn").classList.remove("hidden");
+        document.getElementById("userInfo").innerText = `👤 ${currentUser.email}님`;
+        document.getElementById("userInfo").classList.remove("hidden");
+    } else {
+        document.getElementById("openLoginBtn").classList.remove("hidden");
+        document.getElementById("logoutBtn").classList.add("hidden");
+        document.getElementById("userInfo").classList.add("hidden");
+    }
+}
+
+document.getElementById("logoutBtn").addEventListener("click", () => {
+    localStorage.removeItem("zuroo_user");
+    currentUser = null;
+    updateAuthUI();
+    alert("로그아웃 되었습니다.");
+});
+
+async function handleAuth(action) {
+    const email = document.getElementById("emailInput").value;
+    const password = document.getElementById("passwordInput").value;
+    
+    if (!email || password.length < 6) return alert("이메일과 6자리 이상의 비밀번호를 입력하세요.");
+
+    try {
+        const res = await fetch('/api/auth', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action, email, password })
+        });
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.error);
+
+        const userObj = data.user || data; 
+        currentUser = { id: userObj.id, email: email };
+        localStorage.setItem("zuroo_user", JSON.stringify(currentUser));
+        
+        authModal.classList.add("hidden");
+        updateAuthUI();
+        alert(action === 'signup' ? "회원가입 완료! 로그인되었습니다." : "로그인 성공!");
+
+    } catch (err) {
+        alert("에러: " + err.message);
+    }
+}
+
+document.getElementById("loginSubmitBtn").addEventListener("click", () => handleAuth('login'));
+document.getElementById("signupSubmitBtn").addEventListener("click", () => handleAuth('signup'));
+
 editModeBtn.addEventListener("click", () => {
     isEditMode = !isEditMode;
     editModeBtn.innerText = isEditMode ? "수정 완료 ✅" : "판 커스텀하기 ✏️";
-    if (isEditMode) {
-        alert("바꾸고 싶은 하얀색 칸을 클릭해서 벌칙을 마음대로 수정해 보세요! (시작, 지옥 등 고정 칸 제외)");
-    }
+    if (isEditMode) alert("하얀색 칸을 클릭해서 벌칙을 마음대로 수정하세요!");
 });
 
-// 2) 보드판 칸을 클릭했을 때 글자 바꾸기 (이벤트 위임 활용)
-boardContainer.addEventListener("click", (e) => {
+document.getElementById("boardContainer").addEventListener("click", (e) => {
     if (!isEditMode) return;
-    
-    // 클릭한 곳이 타일(칸)인지 확인
     const tile = e.target.closest('.tile');
     if (!tile) return;
 
-    // 타일이 전체 보드에서 몇 번째 칸인지 인덱스 찾기
-    const tilesArray = Array.from(boardContainer.querySelectorAll('.tile'));
+    const tilesArray = Array.from(document.getElementById("boardContainer").querySelectorAll('.tile'));
     const index = tilesArray.indexOf(tile);
 
-    // 고정 칸(0: 시작, 5: 지옥, 10: 눈치게임, 15: 맞은편)은 수정 방지
-    if ([0, 5, 10, 15].includes(index)) {
-        alert("이 칸은 게임 진행을 위한 고정 칸이라 바꿀 수 없습니다 🙅‍♂️");
-        return;
-    }
+    if ([0, 5, 10, 15].includes(index)) return alert("이 칸은 고정 칸이라 바꿀 수 없습니다 🙅‍♂️");
 
-    const currentText = mainBoardData[index];
-    const newText = prompt("새로운 벌칙을 입력하세요:", currentText);
-    
+    const newText = prompt("새로운 벌칙을 입력하세요:", mainBoardData[index]);
     if (newText && newText.trim() !== "") {
         mainBoardData[index] = newText;
-        renderAllBoards(); // 화면 새로고침
+        renderAllBoards();
     }
 });
 
-// 3) DB에 현재 판 저장하기
 document.getElementById("saveBtn").addEventListener("click", async () => {
-    const boardName = prompt("저장할 판의 이름을 지어주세요 (예: 스퀘 엠티용 매운맛)");
+    if (!currentUser) return alert("로그인을 먼저 해주세요!");
+
+    const boardName = prompt("저장할 판의 이름을 지어주세요:");
     if (!boardName) return;
 
     try {
         const response = await fetch('/api/saveBoard', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ board_name: boardName, custom_tiles: mainBoardData })
+            body: JSON.stringify({ board_name: boardName, custom_tiles: mainBoardData, user_id: currentUser.id })
         });
         
-        if (response.ok) alert("✅ 데이터베이스에 성공적으로 저장되었습니다!");
-        else alert("❌ 저장에 실패했습니다.");
-    } catch (error) {
-        alert("서버 연결에 문제가 발생했습니다.");
-    }
+        if (response.ok) alert("✅ 내 계정에 성공적으로 저장되었습니다!");
+        else alert("❌ 저장 실패");
+    } catch (error) { alert("서버 에러!"); }
 });
 
-// 4) DB에서 판 목록 불러오기
 document.getElementById("loadBtn").addEventListener("click", async () => {
+    if (!currentUser) return alert("로그인을 먼저 해주세요!");
+
     try {
-        const response = await fetch('/api/loadBoards');
+        const response = await fetch(`/api/loadBoards?user_id=${currentUser.id}`);
         const boards = await response.json();
         
-        if (boards.length === 0) {
-            return alert("아직 저장된 판이 없습니다. 첫 번째 판을 만들어 보세요!");
-        }
+        if (boards.length === 0) return alert("아직 저장한 판이 없습니다.");
         
-        // 목록을 번호와 함께 보여주기
-        let msg = "👇 불러올 판의 번호를 입력하세요:\n\n";
-        boards.forEach((board, idx) => {
-            msg += `${idx + 1}. ${board.board_name}\n`;
-        });
+        let msg = "👇 불러올 판 번호를 입력하세요:\n\n";
+        boards.forEach((board, idx) => { msg += `${idx + 1}. ${board.board_name}\n`; });
         
         const choice = prompt(msg);
         const selectedIndex = parseInt(choice) - 1;
         
-        // 유저가 올바른 번호를 입력했다면 해당 판 데이터로 교체
         if (boards[selectedIndex]) {
             mainBoardData = boards[selectedIndex].custom_tiles;
-            renderAllBoards(); // 화면 새로고침
-            alert(`🎉 '${boards[selectedIndex].board_name}' 판을 성공적으로 불러왔습니다!`);
+            renderAllBoards();
+            alert(`🎉 '${boards[selectedIndex].board_name}' 판 로드 완료!`);
         }
-    } catch (error) {
-        alert("목록을 불러오는 중 오류가 발생했습니다.");
-    }
+    } catch (error) { alert("목록 불러오기 실패!"); }
 });
