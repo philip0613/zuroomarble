@@ -1,24 +1,24 @@
 // --- 1. 데이터 설정 ---
 const totalTiles = 20;
 let mainBoardData = Array(totalTiles).fill("랜덤 마시기");
+
+// 기본 고정 칸 설정 (5번 칸에 지옥 딱 하나!)
 mainBoardData[0] = "GAME\nSTART!!";
-mainBoardData[5] = "무인도\n(휴식)";
+mainBoardData[5] = "🔥 지옥 🔥"; 
 mainBoardData[10] = "눈치게임\n시작!";
 mainBoardData[15] = "맞은 편\n한잔 마시기";
-mainBoardData[3] = "🔥 지옥 🔥";
-mainBoardData[8] = "🔥 지옥 🔥";
-mainBoardData[17] = "🔥 지옥 🔥";
 
 // 지옥 보드 데이터 (8칸: 3x3 그리드의 테두리)
 // 0: 입구, 1~5&7: 마시기, 6: 탈출
 const hellBoardData = ["💀 입구", "🍻 1잔", "🍻 1잔", "🍻 1잔", "🍻 1잔", "🍻 1잔", "👼 탈출!", "🍻 1잔"];
 
+// 플레이어 및 게임 상태 변수
 let players = [];
 let turnIndex = 0;
 let isAnimating = false;
 const colors = ['#ff6b6b', '#4facfe', '#f9ca24', '#2ecc71', '#9b59b6', '#fd79a8'];
 
-// HTML 요소들
+// HTML 요소들 가져오기
 const setupArea = document.getElementById("setupArea");
 const gameArea = document.getElementById("gameArea");
 const playerNameInput = document.getElementById("playerName");
@@ -57,6 +57,7 @@ startGameBtn.addEventListener("click", () => {
 });
 
 // --- 3. 그리드 좌표 계산 함수 ---
+// 메인 보드 (6x6 ㅁ자 궤도)
 function getMainGridPos(index) {
     if (index === 0) return { r: 6, c: 1 };
     if (index >= 1 && index <= 4) return { r: 6 - index, c: 1 };
@@ -68,6 +69,7 @@ function getMainGridPos(index) {
     if (index >= 16 && index <= 19) return { r: 6, c: 21 - index };
 }
 
+// 지옥 보드 (3x3 ㅁ자 궤도)
 function getHellGridPos(index) {
     if (index === 0) return { r: 1, c: 1 };
     if (index === 1) return { r: 1, c: 2 };
@@ -126,6 +128,7 @@ function renderAllBoards() {
 
 // --- 5. 턴 및 주사위 로직 ---
 function updateTurnUI() {
+    if (players.length === 0) return;
     const cp = players[turnIndex];
     turnIndicator.innerText = `👉 [ ${cp.name} ] 의 차례!`;
     turnIndicator.style.color = cp.color;
@@ -167,7 +170,7 @@ function rollDice(btnElement, maxNum, callback) {
     }, 50);
 }
 
-// 메인 주사위 굴리기
+// 메인 주사위 굴리기 (6면체)
 diceBtn.addEventListener("click", () => {
     rollDice(diceBtn, 6, (num) => {
         const cp = players[turnIndex];
@@ -176,9 +179,9 @@ diceBtn.addEventListener("click", () => {
 
         setTimeout(() => {
             if (mainBoardData[cp.mainPos] === "🔥 지옥 🔥") {
-                alert(`🚨 ${cp.name} 지옥으로 추락!`);
+                alert(`🚨 ${cp.name} 지옥으로 추락! (다음 턴부터 지옥 탈출)`);
                 cp.isInHell = true;
-                cp.hellPos = 0; // 지옥 입구로 이동
+                cp.hellPos = 0; // 지옥 입구로 워프
                 renderAllBoards();
             } else {
                 alert(`${cp.name}: [ ${mainBoardData[cp.mainPos]} ]`);
@@ -188,7 +191,7 @@ diceBtn.addEventListener("click", () => {
     });
 });
 
-// 지옥 주사위 굴리기
+// 지옥 주사위 굴리기 (6면체)
 hellDiceBtn.addEventListener("click", () => {
     rollDice(hellDiceBtn, 6, (num) => {
         const cp = players[turnIndex];
