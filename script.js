@@ -1,33 +1,60 @@
-// --- 1. 기본 판 설정 ---
-// 총 16칸 기준 (원하는 만큼 늘려도 됨)
-let boardData = Array(16).fill("랜덤 마시기"); // 기본값 세팅
+// --- 1. 총 20칸 설정 (사진과 똑같은 배치) ---
+const totalTiles = 20;
+let boardData = Array(totalTiles).fill("랜덤 마시기");
 
-// 고정 칸 설정
-boardData[0] = "시작 (원샷)";
-boardData[7] = "🔥 지옥 입구 🔥";
+// 캡처 사진 기반 고정 칸 
+boardData[0] = "GAME\nSTART!!";
+boardData[5] = "무인도\n(휴식)";
+boardData[10] = "눈치게임\n시작!";
+boardData[15] = "맞은 편\n한잔 마시기";
 
-// 게임 상태 변수
+// 🔥 황금열쇠 대신 들어갈 '지옥' 구역 3군데 배치
+boardData[3] = "🔥 지옥 🔥";
+boardData[8] = "🔥 지옥 🔥";
+boardData[17] = "🔥 지옥 🔥";
+
 let currentPos = 0;
 let isInHell = false;
+let isRolling = false;
 
-// HTML 요소 가져오기
 const boardContainer = document.getElementById("boardContainer");
+const centerArea = document.getElementById("centerArea");
+const normalMode = document.getElementById("normalMode");
+const hellMode = document.getElementById("hellMode");
 const diceBtn = document.getElementById("diceBtn");
 const hellDiceBtn = document.getElementById("hellDiceBtn");
 const statusMsg = document.getElementById("statusMsg");
-const hellContainer = document.getElementById("hellContainer");
+const hellResult = document.getElementById("hellResult");
 
-// --- 2. 게임판 그리기 함수 ---
+// 인덱스 번호에 따라 그리드(Grid) 위치를 지정하는 함수 (ㅁ자 궤도)
+function getGridPos(index) {
+    if (index === 0) return { row: 6, col: 1 }; // 좌측 하단 시작
+    if (index >= 1 && index <= 4) return { row: 6 - index, col: 1 }; // 왼쪽 위로
+    if (index === 5) return { row: 1, col: 1 }; // 좌측 상단
+    if (index >= 6 && index <= 9) return { row: 1, col: index - 4 }; // 위쪽 우측으로
+    if (index === 10) return { row: 1, col: 6 }; // 우측 상단
+    if (index >= 11 && index <= 14) return { row: index - 9, col: 6 }; // 오른쪽 아래로
+    if (index === 15) return { row: 6, col: 6 }; // 우측 하단
+    if (index >= 16 && index <= 19) return { row: 6, col: 21 - index }; // 아래쪽 좌측으로
+}
+
+// --- 2. 게임판 그리기 ---
 function renderBoard() {
-    boardContainer.innerHTML = ""; // 기존 판 지우기
+    // 기존 타일만 지우기 (가운데 영역 제외)
+    document.querySelectorAll('.tile').forEach(e => e.remove());
     
     boardData.forEach((text, index) => {
         const tile = document.createElement("div");
         tile.className = "tile";
         tile.innerText = text;
+        
+        // CSS Grid 좌표 꽂아넣기
+        const pos = getGridPos(index);
+        tile.style.gridRow = pos.row;
+        tile.style.gridColumn = pos.col;
 
-        // 현재 내 위치에 말(Token) 표시하기
-        if (index === currentPos && !isInHell) {
+        // 현재 위치에 말 생성
+        if (index === currentPos) {
             tile.classList.add("active");
             const token = document.createElement("div");
             token.className = "player-token";
@@ -38,55 +65,79 @@ function renderBoard() {
     });
 }
 
-// --- 3. 일반 주사위 굴리기 로직 ---
+// --- 3. 다이내믹 주사위 애니메이션 ---
 diceBtn.addEventListener("click", () => {
-    if (isInHell) return;
+    if (isInHell || isRolling) return;
+    isRolling = true;
 
-    // 1~6 랜덤 숫자 생성
-    const diceNum = Math.floor(Math.random() * 6) + 1;
-    
-    // 말 이동 (보드 크기를 넘어가면 다시 처음으로 뺑뺑이 돌기 위해 % 사용)
-    currentPos = (currentPos + diceNum) % boardData.length;
-    
-    statusMsg.innerText = `🎲 ${diceNum}칸 이동! [ ${boardData[currentPos]} ] 당첨!`;
+    let rollCount = 0;
+    // 0.05초마다 숫자가 바뀌는 애니메이션
+    const rollInterval = setInterval(() => {
+        const tempNum = Math.floor(Math.random() * 6) + 1;
+        diceBtn.innerText = `🎲 ${tempNum}`;
+        rollCount++;
 
-    // 지옥 입구에 도착했을 때
-    if (boardData[currentPos] === "🔥 지옥 입구 🔥") {
+        // 15번 굴러가면 멈춤 (약 0.75초)
+        if (rollCount > 15) {
+            clearInterval(rollInterval);
+            const finalNum = tempNum; 
+            diceBtn.innerText = `🎲 ${finalNum} 나왔다!`;
+            
+            // 말 이동
+            currentPos = (currentPos + finalNum) % totalTiles;
+            statusMsg.innerText = `[ ${boardData[currentPos]} ] 도착!`;
+            
+            renderBoard();
+            checkHell(); // 지옥에 걸렸는지 확인
+            
+            isRolling = false;
+            setTimeout(() => { diceBtn.innerText = "주사위 굴리기 🎲"; }, 1500);
+        }
+    }, 50);
+});
+
+// --- 4. 지옥 로직 ---
+function checkHell() {
+    if (boardData[currentPos] === "🔥 지옥 🔥") {
         isInHell = true;
         setTimeout(() => {
-            alert("지옥에 빠졌습니다! 다음 턴부터 탈출 룰렛을 돌려야 합니다.");
-            boardContainer.classList.add("hidden");
-            diceBtn.classList.add("hidden");
-            hellContainer.classList.remove("hidden");
-            statusMsg.innerText = "🔥 지옥에 갇혔습니다 🔥";
-        }, 500);
+            normalMode.classList.add("hidden");
+            hellMode.classList.remove("hidden");
+            hellResult.innerText = "🎯";
+        }, 800);
     }
+}
 
-    renderBoard();
-});
-
-// --- 4. 지옥 전용 탈출 룰렛 로직 (1/7 확률) ---
 hellDiceBtn.addEventListener("click", () => {
-    // 1~7 랜덤 숫자 생성
-    const hellNum = Math.floor(Math.random() * 7) + 1;
+    if (isRolling) return;
+    isRolling = true;
+    
+    let rollCount = 0;
+    const rollInterval = setInterval(() => {
+        const tempNum = Math.floor(Math.random() * 7) + 1;
+        hellResult.innerText = tempNum;
+        rollCount++;
 
-    if (hellNum === 7) {
-        // 숫자 7이 나오면 탈출 (1칸)
-        alert("🎉 기적적으로 지옥에서 탈출했습니다! (다음 칸으로 이동)");
-        isInHell = false;
-        currentPos = (currentPos + 1) % boardData.length; // 지옥 다음 칸으로
-        
-        hellContainer.classList.add("hidden");
-        boardContainer.classList.remove("hidden");
-        diceBtn.classList.remove("hidden");
-        statusMsg.innerText = "휴, 살았다! 다시 주사위를 굴려주세요.";
-    } else {
-        // 1~6이 나오면 벌칙 (6칸)
-        statusMsg.innerText = `🔥 탈출 실패! (숫자: ${hellNum}) 한 잔 마시기! 🍻`;
-    }
-
-    renderBoard();
+        if (rollCount > 20) {
+            clearInterval(rollInterval);
+            const finalNum = Math.floor(Math.random() * 7) + 1;
+            hellResult.innerText = `결과: ${finalNum}`;
+            
+            if (finalNum === 7) {
+                alert("🎉 기적의 7! 지옥 탈출!");
+                isInHell = false;
+                currentPos = (currentPos + 1) % totalTiles; 
+                hellMode.classList.add("hidden");
+                normalMode.classList.remove("hidden");
+                statusMsg.innerText = "휴, 다음 칸으로 이동 완료!";
+                renderBoard();
+            } else {
+                alert(`🔥 탈출 실패 (숫자 ${finalNum}) - 한 잔 마셔라!`);
+            }
+            isRolling = false;
+        }
+    }, 50);
 });
 
-// 처음 화면 로딩될 때 판 그리기 실행
+// 초기 세팅
 renderBoard();
